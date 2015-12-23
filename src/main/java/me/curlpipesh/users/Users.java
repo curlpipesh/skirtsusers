@@ -2,13 +2,12 @@ package me.curlpipesh.users;
 
 import lombok.Getter;
 import lombok.NonNull;
-import me.curlpipesh.util.chat.MessageUtil;
+import me.curlpipesh.users.command.CommandKD;
 import me.curlpipesh.util.command.SkirtsCommand;
 import me.curlpipesh.util.database.IDatabase;
 import me.curlpipesh.util.database.impl.SQLiteDatabase;
 import me.curlpipesh.util.plugin.SkirtsPlugin;
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -29,6 +28,7 @@ import java.util.UUID;
  * @author audrey
  * @since 12/21/15.
  */
+@SuppressWarnings("Duplicates")
 public class Users extends SkirtsPlugin {
     @Getter
     private IDatabase userDb;
@@ -98,50 +98,7 @@ public class Users extends SkirtsPlugin {
                 .setDescription("Shows you your K/D ratio")
                 .addAlias("kd").addAlias("killdeathratio").addAlias("kdr")
                 .setPermissionNode("skirtsusers.kdr")
-                .setExecutor((commandSender, command, s, args) -> {
-                    if(commandSender.hasPermission("skirtsusers.kdr")) {
-                        MessageUtil.sendMessage(commandSender, SkirtsPlugin.PREFIX, command.getPermissionMessage());
-                        return true;
-                    }
-                    if(commandSender instanceof Player) {
-                        if(args.length > 0) {
-                            Optional<SkirtsUser> skirtsUserOptional = skirtsUserMap.getUserByName(args[0]);
-                            if(skirtsUserOptional.isPresent()) {
-                                int kills = skirtsUserOptional.get().getKills();
-                                int deaths = skirtsUserOptional.get().getDeaths();
-                                if(deaths == 0) {
-                                    MessageUtil.sendMessage(commandSender, SkirtsPlugin.PREFIX,
-                                            ChatColor.GRAY + skirtsUserOptional.get().getLastName() + "'s K/D is " +
-                                                    ChatColor.RED + "perfect" + ChatColor.GRAY + "!");
-                                } else {
-                                    MessageUtil.sendMessage(commandSender, SkirtsPlugin.PREFIX,
-                                            ChatColor.GRAY + skirtsUserOptional.get().getLastName() + "'s K/D is " +
-                                                    ChatColor.RED + ((float) kills / (float) deaths) + ChatColor.GRAY + "!");
-                                }
-                            } else {
-                                MessageUtil.sendMessage(commandSender, SkirtsPlugin.PREFIX, "Couldn't find your K/D ratio!?");
-                            }
-                        } else {
-                            Optional<SkirtsUser> skirtsUserOptional = skirtsUserMap.getUser(((Player) commandSender).getUniqueId());
-                            if(skirtsUserOptional.isPresent()) {
-                                int kills = skirtsUserOptional.get().getKills();
-                                int deaths = skirtsUserOptional.get().getDeaths();
-                                if(deaths == 0) {
-                                    MessageUtil.sendMessage(commandSender, SkirtsPlugin.PREFIX,
-                                            ChatColor.GRAY + "Your K/D is " + ChatColor.RED + "perfect" + ChatColor.GRAY + "!");
-                                } else {
-                                    MessageUtil.sendMessage(commandSender, SkirtsPlugin.PREFIX,
-                                            ChatColor.GRAY + "Your K/D is " + ChatColor.RED + ((float) kills / (float) deaths) + ChatColor.GRAY + "!");
-                                }
-                            } else {
-                                MessageUtil.sendMessage(commandSender, SkirtsPlugin.PREFIX, "Couldn't find your K/D ratio!?");
-                            }
-                        }
-                    } else {
-                        MessageUtil.sendMessage(commandSender, SkirtsPlugin.PREFIX, "You must be a player to use that!");
-                    }
-                    return true;
-                }).build());
+                .setExecutor(new CommandKD()).build());
     }
 
     @Override
