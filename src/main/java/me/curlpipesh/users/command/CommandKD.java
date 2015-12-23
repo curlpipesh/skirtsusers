@@ -19,27 +19,28 @@ import java.util.Optional;
 public class CommandKD implements CommandExecutor {
     @Override
     public boolean onCommand(final CommandSender commandSender, final Command command, final String s, final String[] args) {
-        if(commandSender.hasPermission("skirtsusers.kdr")) {
-            MessageUtil.sendMessage(commandSender, SkirtsPlugin.PREFIX, command.getPermissionMessage());
-            return true;
-        }
         if(commandSender instanceof Player) {
             if(args.length > 0) {
-                Optional<SkirtsUser> skirtsUserOptional = Users.getInstance().getSkirtsUserMap().getUserByName(args[0]);
-                if(skirtsUserOptional.isPresent()) {
-                    int kills = skirtsUserOptional.get().getKills();
-                    int deaths = skirtsUserOptional.get().getDeaths();
-                    if(deaths == 0) {
-                        MessageUtil.sendMessage(commandSender, SkirtsPlugin.PREFIX,
-                                ChatColor.GRAY + skirtsUserOptional.get().getLastName() + "'s K/D is " +
-                                        ChatColor.RED + "perfect" + ChatColor.GRAY + "!");
+                if(commandSender.hasPermission("skirtsusers.kdr.others")) {
+                    Optional<SkirtsUser> skirtsUserOptional = Users.getInstance().getSkirtsUserMap().getUserByName(args[0]);
+                    if(skirtsUserOptional.isPresent()) {
+                        int kills = skirtsUserOptional.get().getKills();
+                        int deaths = skirtsUserOptional.get().getDeaths();
+                        if(deaths == 0) {
+                            MessageUtil.sendMessage(commandSender, SkirtsPlugin.PREFIX,
+                                    ChatColor.GRAY + skirtsUserOptional.get().getLastName() + "'s K/D is " +
+                                            ChatColor.RED + "perfect" + ChatColor.GRAY + "!");
+                        } else {
+                            MessageUtil.sendMessage(commandSender, SkirtsPlugin.PREFIX,
+                                    ChatColor.GRAY + skirtsUserOptional.get().getLastName() + "'s K/D is " +
+                                            ChatColor.RED + ((float) kills / (float) deaths) + ChatColor.GRAY + "!");
+                        }
                     } else {
-                        MessageUtil.sendMessage(commandSender, SkirtsPlugin.PREFIX,
-                                ChatColor.GRAY + skirtsUserOptional.get().getLastName() + "'s K/D is " +
-                                        ChatColor.RED + ((float) kills / (float) deaths) + ChatColor.GRAY + "!");
+                        MessageUtil.sendMessage(commandSender, SkirtsPlugin.PREFIX, "Couldn't find that K/D ratio!?");
                     }
                 } else {
-                    MessageUtil.sendMessage(commandSender, SkirtsPlugin.PREFIX, "Couldn't find your K/D ratio!?");
+                    MessageUtil.sendMessage(commandSender, SkirtsPlugin.PREFIX, ChatColor.RED + command.getPermissionMessage());
+                    return true;
                 }
             } else {
                 Optional<SkirtsUser> skirtsUserOptional = Users.getInstance().getSkirtsUserMap().getUser(((Player) commandSender).getUniqueId());

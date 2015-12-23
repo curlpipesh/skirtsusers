@@ -146,9 +146,7 @@ public class Users extends SkirtsPlugin {
                             MessageUtil.sendMessages(commandSender, SkirtsPlugin.PREFIX, 0,
                                     ChatColor.GRAY + "Play time: " + ChatColor.RED +
                                             String.format("%d day(s), %d hour(s), %d minute(s)",
-                                                    days,
-                                                    hours,
-                                                    minutes));
+                                                    days, hours, minutes));
                         }
                     } else {
                         MessageUtil.sendMessage(commandSender, SkirtsPlugin.PREFIX, "Silly console, you have no statistics @_@");

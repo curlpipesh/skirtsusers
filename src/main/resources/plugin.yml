@@ -5,3 +5,17 @@ description: skirts' plugin for basic user management like UUID->name
 authors: [skirts]
 website: https://curlpipesh.me/
 depend: [SkirtsUtil]
+
+permissions:
+  skirtsusers.kdr:
+    description: Allow usage of /kdr to see K/D ratio
+    default: true
+  skirtsusers.kdr.others:
+    description: See another user's K/D ratio
+    default: true
+  skirtsusers.playtime:
+    description: See how long you've been playing on the server
+    default: true
+  skirtsusers.playtime.others:
+    description: See how long another user has been playing on the server
+    default: op
