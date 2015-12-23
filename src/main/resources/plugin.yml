@@ -1,0 +1,7 @@
+name: SkirtsUsers
+main: me.curlpipesh.users.Users
+version: 0.1.0
+description: skirts' plugin for basic user management like UUID->name
+authors: [skirts]
+website: https://curlpipesh.me/
+depend: [SkirtsUtil]
