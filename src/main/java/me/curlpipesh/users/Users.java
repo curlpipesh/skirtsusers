@@ -3,11 +3,14 @@ package me.curlpipesh.users;
 import lombok.Getter;
 import lombok.NonNull;
 import me.curlpipesh.users.command.CommandKD;
+import me.curlpipesh.util.chat.MessageUtil;
 import me.curlpipesh.util.command.SkirtsCommand;
 import me.curlpipesh.util.database.IDatabase;
 import me.curlpipesh.util.database.impl.SQLiteDatabase;
 import me.curlpipesh.util.plugin.SkirtsPlugin;
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
+import org.bukkit.Statistic;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -23,6 +26,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author audrey
@@ -39,6 +43,7 @@ public class Users extends SkirtsPlugin {
     private static Users instance;
 
     @SuppressWarnings({"unused", "FieldCanBeLocal"})
+    // TODO: Apparently this is kill
     private boolean welcomeTitleEnabled = false;
     @SuppressWarnings({"FieldCanBeLocal", "unused"})
     private String serverName = "";
@@ -99,6 +104,58 @@ public class Users extends SkirtsPlugin {
                 .addAlias("kd").addAlias("killdeathratio").addAlias("kdr")
                 .setPermissionNode("skirtsusers.kdr")
                 .setExecutor(new CommandKD()).build());
+        getCommandManager().registerCommand(new SkirtsCommand.Builder().setName("playtime")
+                .setDescription("Shows you your playtime")
+                .setPermissionMessage("skirtsusers.playtime")
+                .setUsage("/playtime [user]")
+                .setExecutor((commandSender, command, s, args) -> {
+                    if(commandSender instanceof Player) {
+                        if(args.length > 0) {
+                            if(commandSender.hasPermission("skirtsusers.playtime.others")) {
+                                Optional<SkirtsUser> skirtsUserOptional = skirtsUserMap.getUserByName(args[0]);
+                                if(skirtsUserOptional.isPresent()) {
+                                    try {
+                                        long time = Bukkit.getPlayer(skirtsUserOptional.get().getUuid()).getStatistic(Statistic.PLAY_ONE_TICK) / 20L;
+                                        long days = TimeUnit.SECONDS.toDays(time);
+                                        long hours = TimeUnit.SECONDS.toHours(time - TimeUnit.DAYS.toSeconds(days));
+                                        long minutes = TimeUnit.SECONDS.toMinutes(time - TimeUnit.HOURS.toSeconds(hours));
+                                        // No one sane cares about seconds.
+                                        MessageUtil.sendMessages(commandSender, SkirtsPlugin.PREFIX, 0,
+                                                ChatColor.GRAY + "Play time: " + ChatColor.RED +
+                                                        String.format("%d day(s), %d hour(s), %d minute(s)",
+                                                                days,
+                                                                hours,
+                                                                minutes));
+                                    } catch(Exception e) {
+                                        //e.printStackTrace();
+                                        MessageUtil.sendMessage(commandSender, SkirtsPlugin.PREFIX, "Couldn't find statistics for '"
+                                                + skirtsUserOptional.get().getLastName() + "'. Try again when he/she is online?");
+                                    }
+                                } else {
+                                    MessageUtil.sendMessage(commandSender, SkirtsPlugin.PREFIX, "I don't know who that is.");
+                                }
+                            } else {
+                                MessageUtil.sendMessage(commandSender, SkirtsPlugin.PREFIX, ChatColor.RED + "You don't have permssion to do that!");
+                            }
+                        } else {
+                            long time = (((Player) commandSender).getStatistic(Statistic.PLAY_ONE_TICK)) / 20L;
+                            long days = TimeUnit.SECONDS.toDays(time);
+                            long hours = TimeUnit.SECONDS.toHours(time - TimeUnit.DAYS.toSeconds(days));
+                            long minutes = TimeUnit.SECONDS.toMinutes(time - TimeUnit.HOURS.toSeconds(hours));
+                            // No one sane cares about seconds.
+                            MessageUtil.sendMessages(commandSender, SkirtsPlugin.PREFIX, 0,
+                                    ChatColor.GRAY + "Play time: " + ChatColor.RED +
+                                            String.format("%d day(s), %d hour(s), %d minute(s)",
+                                                    days,
+                                                    hours,
+                                                    minutes));
+                        }
+                    } else {
+                        MessageUtil.sendMessage(commandSender, SkirtsPlugin.PREFIX, "Silly console, you have no statistics @_@");
+                    }
+                    return true;
+                })
+                .build());
     }
 
     @Override
@@ -175,14 +232,18 @@ public class Users extends SkirtsPlugin {
                                     event.getPlayer().getUniqueId(), event.getPlayer().getName(), 0, 0,
                                     event.getPlayer().getAddress().getAddress());
                             skirtsUserMap.addUser(skirtsUser);
-                            //MessageUtil.sendTitle(event.getPlayer(), 1, 3, 1, ChatColor.GRAY + "Welcome, " + ChatColor.RED + "%player%" + ChatColor.GRAY + ",",
-                            //        ChatColor.GRAY + "to " + ChatColor.RED + serverName + ChatColor.GRAY + "!");
+                            if(welcomeTitleEnabled) {
+                                MessageUtil.sendTitle(event.getPlayer(), 1, 3, 1, ChatColor.GRAY + "Welcome, " + ChatColor.RED + "%player%" + ChatColor.GRAY + ",",
+                                        ChatColor.GRAY + "to " + ChatColor.RED + serverName + ChatColor.GRAY + "!");
+                            }
                         } else {
                             final String name = event.getPlayer().getName().equals(lastName) ? lastName : event.getPlayer().getName();
                             final SkirtsUser skirtsUser = new SkirtsUser(UUID.fromString(uuid), name, kills, deaths, event.getPlayer().getAddress().getAddress());
                             skirtsUserMap.addUser(skirtsUser);
-                            //MessageUtil.sendTitle(event.getPlayer(), 1, 3, 1, ChatColor.GRAY + "Welcome back, " + ChatColor.RED + "%player%" + ChatColor.GRAY + ",",
-                            //        ChatColor.GRAY + "to " + ChatColor.RED + serverName + ChatColor.GRAY + "!");
+                            if(welcomeTitleEnabled) {
+                                MessageUtil.sendTitle(event.getPlayer(), 1, 3, 1, ChatColor.GRAY + "Welcome back, " + ChatColor.RED + "%player%" + ChatColor.GRAY + ",",
+                                        ChatColor.GRAY + "to " + ChatColor.RED + serverName + ChatColor.GRAY + "!");
+                            }
                         }
                     } catch(SQLException e) {
                         throw new IllegalStateException(e);
