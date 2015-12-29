@@ -3,11 +3,11 @@ package me.curlpipesh.users;
 import lombok.Getter;
 import lombok.NonNull;
 import me.curlpipesh.users.command.CommandKD;
-import me.curlpipesh.util.chat.MessageUtil;
 import me.curlpipesh.util.command.SkirtsCommand;
 import me.curlpipesh.util.database.IDatabase;
 import me.curlpipesh.util.database.impl.SQLiteDatabase;
 import me.curlpipesh.util.plugin.SkirtsPlugin;
+import me.curlpipesh.util.utils.MessageUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Statistic;
@@ -42,16 +42,13 @@ public class Users extends SkirtsPlugin {
     @Getter
     private static Users instance;
 
-    @SuppressWarnings({"unused", "FieldCanBeLocal"})
-    // TODO: Apparently this is kill
-    private boolean welcomeTitleEnabled = false;
+    private boolean welcomeTitleEnabled;
     @SuppressWarnings({"FieldCanBeLocal", "unused"})
     private String serverName = "";
     @Getter
     private SkirtsUserMap skirtsUserMap;
 
     public Users() {
-        super();
         instance = this;
     }
 
@@ -79,16 +76,16 @@ public class Users extends SkirtsPlugin {
         skirtsUserMap = new SkirtsUserMap(this);
 
         try {
-            PreparedStatement s = userDb.getConnection().prepareStatement(String.format("SELECT * FROM %s", userDbName));
+            final PreparedStatement s = userDb.getConnection().prepareStatement(String.format("SELECT * FROM %s", userDbName));
             s.execute();
-            ResultSet rs = s.getResultSet();
+            final ResultSet rs = s.getResultSet();
             getLogger().info("ResultSet worked?: " + rs.isBeforeFirst());
             while(rs.next()) {
-                String uuid = rs.getString("uuid");
-                String lastName = rs.getString("lastName");
-                int kills = rs.getInt("kills");
-                int deaths = rs.getInt("deaths");
-                String ip = rs.getString("ip");
+                final String uuid = rs.getString("uuid");
+                final String lastName = rs.getString("lastName");
+                final int kills = rs.getInt("kills");
+                final int deaths = rs.getInt("deaths");
+                final String ip = rs.getString("ip");
                 if(uuid != null && lastName != null && kills != -1 && deaths != -1 && ip != null) {
                     skirtsUserMap.addUser(new SkirtsUser(UUID.fromString(uuid), lastName, kills, deaths, InetAddress.getByName(ip.replaceAll("/", ""))));
                 }
@@ -99,12 +96,12 @@ public class Users extends SkirtsPlugin {
         }
 
         registerEvents();
-        getCommandManager().registerCommand(new SkirtsCommand.Builder().setName("killdeath")
+        getCommandManager().registerCommand(SkirtsCommand.builder().setName("killdeath")
                 .setDescription("Shows you your K/D ratio")
                 .addAlias("kd").addAlias("killdeathratio").addAlias("kdr")
                 .setPermissionNode("skirtsusers.kdr")
                 .setExecutor(new CommandKD()).build());
-        getCommandManager().registerCommand(new SkirtsCommand.Builder().setName("playtime")
+        getCommandManager().registerCommand(SkirtsCommand.builder().setName("playtime")
                 .setDescription("Shows you your playtime")
                 .setPermissionMessage("skirtsusers.playtime")
                 .setUsage("/playtime [user]")
@@ -128,17 +125,17 @@ public class Users extends SkirtsPlugin {
                                                                 minutes));
                                     } catch(Exception e) {
                                         //e.printStackTrace();
-                                        MessageUtil.sendMessage(commandSender, SkirtsPlugin.PREFIX, "Couldn't find statistics for '"
+                                        MessageUtil.sendMessage(commandSender, SkirtsPlugin.PREFIX, ChatColor.GRAY + "Couldn't find statistics for '"
                                                 + skirtsUserOptional.get().getLastName() + "'. Try again when he/she is online?");
                                     }
                                 } else {
-                                    MessageUtil.sendMessage(commandSender, SkirtsPlugin.PREFIX, "I don't know who that is.");
+                                    MessageUtil.sendMessage(commandSender, SkirtsPlugin.PREFIX, ChatColor.GRAY + "I don't know who that is.");
                                 }
                             } else {
                                 MessageUtil.sendMessage(commandSender, SkirtsPlugin.PREFIX, ChatColor.RED + "You don't have permssion to do that!");
                             }
                         } else {
-                            long time = (((Player) commandSender).getStatistic(Statistic.PLAY_ONE_TICK)) / 20L;
+                            long time = ((Player) commandSender).getStatistic(Statistic.PLAY_ONE_TICK) / 20L;
                             long days = TimeUnit.SECONDS.toDays(time);
                             long hours = TimeUnit.SECONDS.toHours(time - TimeUnit.DAYS.toSeconds(days));
                             long minutes = TimeUnit.SECONDS.toMinutes(time - TimeUnit.HOURS.toSeconds(hours));
@@ -162,17 +159,17 @@ public class Users extends SkirtsPlugin {
     }
 
     @SuppressWarnings("unused")
-    public Optional<SkirtsUser> getUserForUUID(String uuid) {
+    public Optional<SkirtsUser> getUserForUUID(final String uuid) {
         return getUserForUUID(UUID.fromString(uuid));
     }
 
-    public Optional<SkirtsUser> getUserForUUID(UUID uniqueId) {
-        Optional<SkirtsUser> skirtsUserOptional = skirtsUserMap.getUser(uniqueId);
+    public Optional<SkirtsUser> getUserForUUID(final UUID uniqueId) {
+        final Optional<SkirtsUser> skirtsUserOptional = skirtsUserMap.getUser(uniqueId);
         if(!skirtsUserOptional.isPresent()) {
             try {
-                PreparedStatement s = userDb.getConnection().prepareStatement(String.format("SELECT * FROM %s WHERE uuid = ?", userDbName));
+                final PreparedStatement s = userDb.getConnection().prepareStatement(String.format("SELECT * FROM %s WHERE uuid = ?", userDbName));
                 s.setString(1, uniqueId.toString());
-                ResultSet rs = s.executeQuery();
+                final ResultSet rs = s.executeQuery();
                 String uuid = null;
                 String lastName = null;
                 int kills = -1;
@@ -206,12 +203,12 @@ public class Users extends SkirtsPlugin {
             @EventHandler
             @SuppressWarnings("unused")
             public void onPlayerLogin(@NonNull final PlayerJoinEvent event) {
-                Optional<SkirtsUser> skirtsUserOptional = skirtsUserMap.getUser(event.getPlayer().getUniqueId());
+                final Optional<SkirtsUser> skirtsUserOptional = skirtsUserMap.getUser(event.getPlayer().getUniqueId());
                 if(!skirtsUserOptional.isPresent()) {
                     try {
-                        PreparedStatement s = userDb.getConnection().prepareStatement(String.format("SELECT * FROM %s WHERE uuid = ?", userDbName));
+                        final PreparedStatement s = userDb.getConnection().prepareStatement(String.format("SELECT * FROM %s WHERE uuid = ?", userDbName));
                         s.setString(1, event.getPlayer().getUniqueId().toString());
-                        ResultSet rs = s.executeQuery();
+                        final ResultSet rs = s.executeQuery();
                         String uuid = null;
                         String lastName = null;
                         int kills = -1;
@@ -231,19 +228,19 @@ public class Users extends SkirtsPlugin {
                                     event.getPlayer().getAddress().getAddress());
                             skirtsUserMap.addUser(skirtsUser);
                             if(welcomeTitleEnabled) {
-                                MessageUtil.sendTitle(event.getPlayer(), 1, 3, 1, ChatColor.GRAY + "Welcome, " + ChatColor.RED + "%player%" + ChatColor.GRAY + ",",
-                                        ChatColor.GRAY + "to " + ChatColor.RED + serverName + ChatColor.GRAY + "!");
+                                MessageUtil.sendTitle(event.getPlayer(), 1, 3, 1, ChatColor.GRAY + "Welcome, " + ChatColor.RED + "%player%" + ChatColor.GRAY + ',',
+                                        ChatColor.GRAY + "to " + ChatColor.RED + serverName + ChatColor.GRAY + '!');
                             }
                         } else {
                             final String name = event.getPlayer().getName().equals(lastName) ? lastName : event.getPlayer().getName();
                             final SkirtsUser skirtsUser = new SkirtsUser(UUID.fromString(uuid), name, kills, deaths, event.getPlayer().getAddress().getAddress());
                             skirtsUserMap.addUser(skirtsUser);
                             if(welcomeTitleEnabled) {
-                                MessageUtil.sendTitle(event.getPlayer(), 1, 3, 1, ChatColor.GRAY + "Welcome back, " + ChatColor.RED + "%player%" + ChatColor.GRAY + ",",
-                                        ChatColor.GRAY + "to " + ChatColor.RED + serverName + ChatColor.GRAY + "!");
+                                MessageUtil.sendTitle(event.getPlayer(), 1, 3, 1, ChatColor.GRAY + "Welcome back, " + ChatColor.RED + "%player%" + ChatColor.GRAY + ',',
+                                        ChatColor.GRAY + "to " + ChatColor.RED + serverName + ChatColor.GRAY + '!');
                             }
                         }
-                    } catch(SQLException e) {
+                    } catch(final SQLException e) {
                         throw new IllegalStateException(e);
                     }
                 }
@@ -257,7 +254,7 @@ public class Users extends SkirtsPlugin {
                 if(killedSkirtsUser.isPresent()) {
                     killedSkirtsUser.get().setDeaths(killedSkirtsUser.get().getDeaths() + 1);
                 } else {
-                    getLogger().warning("Couldn't update deaths for user '" + event.getEntity().getName() + "' (UUID: " + killed.toString() + ")");
+                    getLogger().warning("Couldn't update deaths for user '" + event.getEntity().getName() + "' (UUID: " + killed + ')');
                 }
                 if(event.getEntity().getKiller() != null) {
                     final UUID killer = event.getEntity().getKiller().getUniqueId();
@@ -265,7 +262,7 @@ public class Users extends SkirtsPlugin {
                     if(killerSkirtsUser.isPresent()) {
                         killerSkirtsUser.get().setKills(killerSkirtsUser.get().getKills() + 1);
                     } else {
-                        getLogger().warning("Couldn't update deaths for user '" + event.getEntity().getKiller().getName() + "' (UUID: " + killer.toString() + ")");
+                        getLogger().warning("Couldn't update deaths for user '" + event.getEntity().getKiller().getName() + "' (UUID: " + killer + ')');
                     }
                 }
             }
@@ -282,12 +279,13 @@ public class Users extends SkirtsPlugin {
                 handleDisconnect(event.getPlayer());
             }
 
+            @SuppressWarnings("TypeMayBeWeakened")
             private void handleDisconnect(@NonNull final Player player) {
                 final Optional<SkirtsUser> skirtsUserOptional = skirtsUserMap.getUser(player.getUniqueId());
                 if(skirtsUserOptional.isPresent()) {
                     // Write to DB
                     try {
-                        PreparedStatement s = userDb.getConnection()
+                        final PreparedStatement s = userDb.getConnection()
                                 // Such bad practice with INSERT OR REPLACE ;_;
                                 .prepareStatement(String.format("INSERT OR REPLACE INTO %s (uuid, lastName, kills, deaths, ip) " +
                                         "VALUES (?, ?, ?, ?, ?)", userDbName));
@@ -297,7 +295,7 @@ public class Users extends SkirtsPlugin {
                         s.setInt(4, skirtsUserOptional.get().getDeaths());
                         s.setString(5, skirtsUserOptional.get().getIp().toString());
                         userDb.execute(s);
-                    } catch(SQLException e) {
+                    } catch(final SQLException e) {
                         e.printStackTrace();
                     }
                 } else {
