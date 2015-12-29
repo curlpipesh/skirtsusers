@@ -103,7 +103,7 @@ public class Users extends SkirtsPlugin {
                 .setExecutor(new CommandKD()).build());
         getCommandManager().registerCommand(SkirtsCommand.builder().setName("playtime")
                 .setDescription("Shows you your playtime")
-                .setPermissionMessage("skirtsusers.playtime")
+                .setPermissionNode("skirtsusers.playtime")
                 .setUsage("/playtime [user]")
                 .setExecutor((commandSender, command, s, args) -> {
                     if(commandSender instanceof Player) {
