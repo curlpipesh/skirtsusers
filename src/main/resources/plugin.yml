@@ -5,6 +5,7 @@ description: skirts' plugin for basic user management like UUID->name
 authors: [skirts]
 website: https://curlpipesh.me/
 depend: [SkirtsUtil]
+loadbefore: [Essentials]
 
 permissions:
   skirtsusers.kdr:
