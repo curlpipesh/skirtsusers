@@ -117,7 +117,7 @@ public class Users extends SkirtsPlugin {
                                         long hours = TimeUnit.SECONDS.toHours(time - TimeUnit.DAYS.toSeconds(days));
                                         long minutes = TimeUnit.SECONDS.toMinutes(time - TimeUnit.HOURS.toSeconds(hours));
                                         // No one sane cares about seconds.
-                                        MessageUtil.sendMessages(commandSender, SkirtsPlugin.PREFIX, 0,
+                                        MessageUtil.sendMessages(commandSender,
                                                 ChatColor.GRAY + "Play time: " + ChatColor.RED +
                                                         String.format("%d day(s), %d hour(s), %d minute(s)",
                                                                 days,
@@ -125,14 +125,14 @@ public class Users extends SkirtsPlugin {
                                                                 minutes));
                                     } catch(Exception e) {
                                         //e.printStackTrace();
-                                        MessageUtil.sendMessage(commandSender, SkirtsPlugin.PREFIX, ChatColor.GRAY + "Couldn't find statistics for '"
+                                        MessageUtil.sendMessage(commandSender, ChatColor.GRAY + "Couldn't find statistics for '"
                                                 + skirtsUserOptional.get().getLastName() + "'. Try again when he/she is online?");
                                     }
                                 } else {
-                                    MessageUtil.sendMessage(commandSender, SkirtsPlugin.PREFIX, ChatColor.GRAY + "I don't know who that is.");
+                                    MessageUtil.sendMessage(commandSender, ChatColor.GRAY + "I don't know who that is.");
                                 }
                             } else {
-                                MessageUtil.sendMessage(commandSender, SkirtsPlugin.PREFIX, ChatColor.RED + "You don't have permssion to do that!");
+                                MessageUtil.sendMessage(commandSender, ChatColor.RED + "You don't have permssion to do that!");
                             }
                         } else {
                             long time = ((Player) commandSender).getStatistic(Statistic.PLAY_ONE_TICK) / 20L;
@@ -140,13 +140,13 @@ public class Users extends SkirtsPlugin {
                             long hours = TimeUnit.SECONDS.toHours(time - TimeUnit.DAYS.toSeconds(days));
                             long minutes = TimeUnit.SECONDS.toMinutes(time - TimeUnit.HOURS.toSeconds(hours));
                             // No one sane cares about seconds.
-                            MessageUtil.sendMessages(commandSender, SkirtsPlugin.PREFIX, 0,
+                            MessageUtil.sendMessages(commandSender,
                                     ChatColor.GRAY + "Play time: " + ChatColor.RED +
                                             String.format("%d day(s), %d hour(s), %d minute(s)",
                                                     days, hours, minutes));
                         }
                     } else {
-                        MessageUtil.sendMessage(commandSender, SkirtsPlugin.PREFIX, "Silly console, you have no statistics @_@");
+                        MessageUtil.sendMessage(commandSender, "Silly console, you have no statistics @_@");
                     }
                     return true;
                 })

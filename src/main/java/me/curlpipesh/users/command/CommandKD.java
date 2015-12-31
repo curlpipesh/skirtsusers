@@ -2,7 +2,6 @@ package me.curlpipesh.users.command;
 
 import me.curlpipesh.users.SkirtsUser;
 import me.curlpipesh.users.Users;
-import me.curlpipesh.util.plugin.SkirtsPlugin;
 import me.curlpipesh.util.utils.MessageUtil;
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
@@ -27,21 +26,21 @@ public class CommandKD implements CommandExecutor {
                         final int kills = skirtsUserOptional.get().getKills();
                         final int deaths = skirtsUserOptional.get().getDeaths();
                         if(deaths == 0) {
-                            MessageUtil.sendMessage(commandSender, SkirtsPlugin.PREFIX,
+                            MessageUtil.sendMessage(commandSender,
                                     ChatColor.GRAY + skirtsUserOptional.get().getLastName() + "'s K/D is " +
                                             ChatColor.RED + "perfect" + ChatColor.GRAY + '!');
                         } else {
                             final String ratio = String.format("%.2f", (float) kills / (float) deaths);
-                            MessageUtil.sendMessage(commandSender, SkirtsPlugin.PREFIX,
+                            MessageUtil.sendMessage(commandSender,
                                     ChatColor.GRAY + skirtsUserOptional.get().getLastName() + "'s K/D is " +
                                             ChatColor.RED + ratio + ChatColor.GRAY + '!');
                         }
                     } else {
-                        MessageUtil.sendMessage(commandSender, SkirtsPlugin.PREFIX, ChatColor.GRAY + "Couldn't find that K/D ratio. " +
+                        MessageUtil.sendMessage(commandSender, ChatColor.GRAY + "Couldn't find that K/D ratio. " +
                                 "Try again when that user is online?");
                     }
                 } else {
-                    MessageUtil.sendMessage(commandSender, SkirtsPlugin.PREFIX, ChatColor.RED + command.getPermissionMessage());
+                    MessageUtil.sendMessage(commandSender, ChatColor.RED + command.getPermissionMessage());
                     return true;
                 }
             } else {
@@ -50,19 +49,19 @@ public class CommandKD implements CommandExecutor {
                     final int kills = skirtsUserOptional.get().getKills();
                     final int deaths = skirtsUserOptional.get().getDeaths();
                     if(deaths == 0) {
-                        MessageUtil.sendMessage(commandSender, SkirtsPlugin.PREFIX,
+                        MessageUtil.sendMessage(commandSender,
                                 ChatColor.GRAY + "Your K/D is " + ChatColor.RED + "perfect" + ChatColor.GRAY + '!');
                     } else {
                         final String ratio = String.format("%.2f", (float) kills / (float) deaths);
-                        MessageUtil.sendMessage(commandSender, SkirtsPlugin.PREFIX,
+                        MessageUtil.sendMessage(commandSender,
                                 ChatColor.GRAY + "Your K/D is " + ChatColor.RED + ratio + ChatColor.GRAY + '!');
                     }
                 } else {
-                    MessageUtil.sendMessage(commandSender, SkirtsPlugin.PREFIX, ChatColor.GRAY + "Couldn't find your K/D ratio!?");
+                    MessageUtil.sendMessage(commandSender, ChatColor.GRAY + "Couldn't find your K/D ratio!?");
                 }
             }
         } else {
-            MessageUtil.sendMessage(commandSender, SkirtsPlugin.PREFIX, "You must be a player to use that!");
+            MessageUtil.sendMessage(commandSender, "You must be a player to use that!");
         }
         return true;
     }
