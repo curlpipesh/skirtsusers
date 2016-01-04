@@ -42,7 +42,6 @@ public class Users extends SkirtsPlugin {
     @Getter
     private static Users instance;
 
-    private boolean welcomeTitleEnabled;
     @SuppressWarnings({"FieldCanBeLocal", "unused"})
     private String serverName = "";
     @Getter
@@ -55,7 +54,6 @@ public class Users extends SkirtsPlugin {
     @Override
     public void onEnable() {
         saveDefaultConfig();
-        welcomeTitleEnabled = getConfig().getBoolean("welcome-title-enabled");
         serverName = getConfig().getString("server-name");
         userDb = new SQLiteDatabase(this, userDbName, "CREATE TABLE IF NOT EXISTS " + userDbName
                 + " (uuid TEXT PRIMARY KEY NOT NULL UNIQUE, lastName TEXT NOT NULL," +
@@ -101,6 +99,7 @@ public class Users extends SkirtsPlugin {
                 .addAlias("kd").addAlias("killdeathratio").addAlias("kdr")
                 .setPermissionNode("skirtsusers.kdr")
                 .setExecutor(new CommandKD()).build());
+        // TODO: Extract to class
         getCommandManager().registerCommand(SkirtsCommand.builder().setName("playtime")
                 .setDescription("Shows you your playtime")
                 .setPermissionNode("skirtsusers.playtime")
@@ -151,6 +150,43 @@ public class Users extends SkirtsPlugin {
                     return true;
                 })
                 .build());
+        getServer().getScheduler().scheduleSyncDelayedTask(this, () -> {
+            for(final Player player : getServer().getOnlinePlayers()) {
+                final Optional<SkirtsUser> skirtsUserOptional = skirtsUserMap.getUser(player.getUniqueId());
+                if(!skirtsUserOptional.isPresent()) {
+                    try {
+                        final PreparedStatement s = userDb.getConnection().prepareStatement(String.format("SELECT * FROM %s WHERE uuid = ?", userDbName));
+                        s.setString(1, player.getUniqueId().toString());
+                        final ResultSet rs = s.executeQuery();
+                        String uuid = null;
+                        String lastName = null;
+                        int kills = -1;
+                        int deaths = -1;
+                        String ip = null;
+                        while(rs.next()) {
+                            uuid = rs.getString("uuid");
+                            lastName = rs.getString("lastName");
+                            kills = rs.getInt("kills");
+                            deaths = rs.getInt("deaths");
+                            ip = rs.getString("ip");
+                        }
+                        if(uuid == null || lastName == null || kills == -1 || deaths == -1 || ip == null) {
+                            // Assume not seen before
+                            final SkirtsUser skirtsUser = new SkirtsUser(
+                                    player.getUniqueId(), player.getName(), 0, 0,
+                                    player.getAddress().getAddress());
+                            skirtsUserMap.addUser(skirtsUser);
+                        } else {
+                            final String name = player.getName().equals(lastName) ? lastName : player.getName();
+                            final SkirtsUser skirtsUser = new SkirtsUser(UUID.fromString(uuid), name, kills, deaths, player.getAddress().getAddress());
+                            skirtsUserMap.addUser(skirtsUser);
+                        }
+                    } catch(final SQLException e) {
+                        throw new IllegalStateException(e);
+                    }
+                }
+            }
+        }, 600L);
     }
 
     @Override
@@ -227,18 +263,10 @@ public class Users extends SkirtsPlugin {
                                     event.getPlayer().getUniqueId(), event.getPlayer().getName(), 0, 0,
                                     event.getPlayer().getAddress().getAddress());
                             skirtsUserMap.addUser(skirtsUser);
-                            if(welcomeTitleEnabled) {
-                                MessageUtil.sendTitle(event.getPlayer(), 1, 3, 1, ChatColor.GRAY + "Welcome, " + ChatColor.RED + "%player%" + ChatColor.GRAY + ',',
-                                        ChatColor.GRAY + "to " + ChatColor.RED + serverName + ChatColor.GRAY + '!');
-                            }
                         } else {
                             final String name = event.getPlayer().getName().equals(lastName) ? lastName : event.getPlayer().getName();
                             final SkirtsUser skirtsUser = new SkirtsUser(UUID.fromString(uuid), name, kills, deaths, event.getPlayer().getAddress().getAddress());
                             skirtsUserMap.addUser(skirtsUser);
-                            if(welcomeTitleEnabled) {
-                                MessageUtil.sendTitle(event.getPlayer(), 1, 3, 1, ChatColor.GRAY + "Welcome back, " + ChatColor.RED + "%player%" + ChatColor.GRAY + ',',
-                                        ChatColor.GRAY + "to " + ChatColor.RED + serverName + ChatColor.GRAY + '!');
-                            }
                         }
                     } catch(final SQLException e) {
                         throw new IllegalStateException(e);
