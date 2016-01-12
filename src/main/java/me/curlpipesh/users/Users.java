@@ -29,6 +29,8 @@ import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 /**
+ * TODO: Make an actual API
+ *
  * @author audrey
  * @since 12/21/15.
  */
@@ -42,8 +44,6 @@ public class Users extends SkirtsPlugin {
     @Getter
     private static Users instance;
 
-    @SuppressWarnings({"FieldCanBeLocal", "unused"})
-    private String serverName = "";
     @Getter
     private SkirtsUserMap skirtsUserMap;
 
@@ -54,7 +54,8 @@ public class Users extends SkirtsPlugin {
     @Override
     public void onEnable() {
         saveDefaultConfig();
-        serverName = getConfig().getString("server-name");
+        // Create database for users. IF NOT EXISTS because we're fucking lazy
+        // and don't check if the table actually exists first. ;-;
         userDb = new SQLiteDatabase(this, userDbName, "CREATE TABLE IF NOT EXISTS " + userDbName
                 + " (uuid TEXT PRIMARY KEY NOT NULL UNIQUE, lastName TEXT NOT NULL," +
                 "kills INT NOT NULL, deaths INT NOT NULL, ip TEXT NOT NULL)");
@@ -73,6 +74,7 @@ public class Users extends SkirtsPlugin {
         }
         skirtsUserMap = new SkirtsUserMap(this);
 
+        // Grab all users
         try {
             final PreparedStatement s = userDb.getConnection().prepareStatement(String.format("SELECT * FROM %s", userDbName));
             s.execute();
@@ -90,10 +92,12 @@ public class Users extends SkirtsPlugin {
             }
             rs.close();
         } catch(SQLException | UnknownHostException e) {
+            // TODO: disable(this)
             throw new IllegalStateException(e);
         }
 
         registerEvents();
+        // Register custom commands
         getCommandManager().registerCommand(SkirtsCommand.builder().setName("killdeath")
                 .setDescription("Shows you your K/D ratio")
                 .addAlias("kd").addAlias("killdeathratio").addAlias("kdr")
@@ -150,6 +154,8 @@ public class Users extends SkirtsPlugin {
                     return true;
                 })
                 .build());
+        // Map users already online. This is for when a /reload happens, or the plugin is
+        // loaded in while the server is running
         getServer().getScheduler().scheduleSyncDelayedTask(this, () -> {
             for(final Player player : getServer().getOnlinePlayers()) {
                 final Optional<SkirtsUser> skirtsUserOptional = skirtsUserMap.getUser(player.getUniqueId());
@@ -194,11 +200,23 @@ public class Users extends SkirtsPlugin {
         userDb.disconnect();
     }
 
+    /**
+     * Return the user with the given UUID
+     *
+     * @param uuid UUID string
+     * @return SkirtsUser with the given uuid
+     */
     @SuppressWarnings("unused")
     public Optional<SkirtsUser> getUserForUUID(final String uuid) {
         return getUserForUUID(UUID.fromString(uuid));
     }
 
+    /**
+     * Return the user with the given UUID
+     *
+     * @param uniqueId UUID
+     * @return SkirtsUser with the given UUID
+     */
     public Optional<SkirtsUser> getUserForUUID(final UUID uniqueId) {
         final Optional<SkirtsUser> skirtsUserOptional = skirtsUserMap.getUser(uniqueId);
         if(!skirtsUserOptional.isPresent()) {
@@ -236,6 +254,8 @@ public class Users extends SkirtsPlugin {
 
     private void registerEvents() {
         getServer().getPluginManager().registerEvents(new Listener() {
+            // Deal with user login. If we don't have them already loaded in memory, grab them from the database.
+            // If we can't find them in the database, assume that it's a new user and work from there
             @EventHandler
             @SuppressWarnings("unused")
             public void onPlayerLogin(@NonNull final PlayerJoinEvent event) {
@@ -274,6 +294,7 @@ public class Users extends SkirtsPlugin {
                 }
             }
 
+            // Update K/D ratios when people die
             @EventHandler
             @SuppressWarnings("unused")
             public void onPlayerDeath(@NonNull final PlayerDeathEvent event) {
@@ -295,18 +316,21 @@ public class Users extends SkirtsPlugin {
                 }
             }
 
+            // Fill in row in DB when someone leaves
             @EventHandler
             @SuppressWarnings("unused")
             public void onPlayerQuit(@NonNull final PlayerQuitEvent event) {
                 handleDisconnect(event.getPlayer());
             }
 
+            // Fill in row in DB when someone leaves
             @EventHandler
             @SuppressWarnings("unused")
             public void onPlayerKick(@NonNull final PlayerKickEvent event) {
                 handleDisconnect(event.getPlayer());
             }
 
+            // Fill in row in DB when someone leaves. Error if something bad happens
             @SuppressWarnings("TypeMayBeWeakened")
             private void handleDisconnect(@NonNull final Player player) {
                 final Optional<SkirtsUser> skirtsUserOptional = skirtsUserMap.getUser(player.getUniqueId());
