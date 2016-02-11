@@ -1,4 +1,4 @@
-package me.curlpipesh.users;
+package me.curlpipesh.users.user;
 
 import lombok.Getter;
 import lombok.NonNull;
@@ -27,7 +27,7 @@ public class SkirtsUserMap {
      */
     private final SkirtsPlugin plugin;
 
-    SkirtsUserMap(@NonNull final SkirtsPlugin plugin) {
+    public SkirtsUserMap(@NonNull final SkirtsPlugin plugin) {
         this.plugin = plugin;
         skirtsUsers = new ArrayList<>();
     }

@@ -1,6 +1,6 @@
 package me.curlpipesh.users.command;
 
-import me.curlpipesh.users.SkirtsUser;
+import me.curlpipesh.users.user.SkirtsUser;
 import me.curlpipesh.users.Users;
 import me.curlpipesh.util.utils.MessageUtil;
 import org.bukkit.ChatColor;
