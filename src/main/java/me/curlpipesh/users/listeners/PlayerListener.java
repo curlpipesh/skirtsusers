@@ -6,6 +6,7 @@ import me.curlpipesh.users.Users;
 import me.curlpipesh.users.attribute.Attribute;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
@@ -32,7 +33,13 @@ public class PlayerListener implements Listener {
 
     // Deal with user login. If we don't have them already loaded in memory, grab them from the database.
     // If we can't find them in the database, assume that it's a new user and work from there
-    @EventHandler
+
+    /**
+     * Lowest priority so that users are created first
+     *
+     * @param event
+     */
+    @EventHandler(priority = EventPriority.HIGHEST)
     @SuppressWarnings("unused")
     public void onPlayerLogin(@NonNull final PlayerJoinEvent event) {
         final Optional<SkirtsUser> skirtsUserOptional = users.getSkirtsUserMap().getUser(event.getPlayer().getUniqueId());
@@ -64,7 +71,7 @@ public class PlayerListener implements Listener {
                     final String name = event.getPlayer().getName().equals(lastName) ? lastName : event.getPlayer().getName();
                     final SkirtsUser skirtsUser = new SkirtsUser(UUID.fromString(uuid), name, kills, deaths,
                             event.getPlayer().getAddress().getAddress());
-                    final PreparedStatement s2 = users.getUserDb().getConnection()
+                    /*final PreparedStatement s2 = users.getUserDb().getConnection()
                             .prepareStatement(String.format("SELECT * FROM %s WHERE uuid = ?", users.getAttributeDbName()));
                     final ResultSet rs2 = s2.executeQuery();
                     while(rs2.next()) {
@@ -73,7 +80,7 @@ public class PlayerListener implements Listener {
                         final String attrType = rs2.getString("attr_type");
                         final String attrValue = rs2.getString("attr_value");
                         skirtsUser.addAttribute(attrName, Attribute.fromString(attrType, attrValue));
-                    }
+                    }*/
                     users.getSkirtsUserMap().addUser(skirtsUser);
                 }
             } catch(final SQLException e) {
@@ -138,6 +145,7 @@ public class PlayerListener implements Listener {
                 s.setInt(4, user.getDeaths());
                 s.setString(5, user.getIp().toString());
                 users.getUserDb().execute(s);
+                // TODO: ATTR
                 for(final Entry<String, Attribute<?>> e : user.getAttributes().entrySet()) {
                     final PreparedStatement s2 = users.getUserDb().getConnection()
                             // Such bad practice with INSERT OR REPLACE ;_;

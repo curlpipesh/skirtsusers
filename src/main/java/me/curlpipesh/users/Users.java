@@ -50,15 +50,16 @@ public class Users extends SkirtsPlugin {
 
     @Override
     public void onEnable() {
-        saveDefaultConfig();
+        if(!getDataFolder().exists()) {
+            //noinspection ResultOfMethodCallIgnored
+            getDataFolder().mkdirs();
+        }
+        //saveDefaultConfig();
         // Create database for users. IF NOT EXISTS because we're fucking lazy
         // and don't check if the table actually exists first. ;-;
         userDb = new SQLiteDatabase(this, userDbName, "CREATE TABLE IF NOT EXISTS " + userDbName
                 + " (uuid TEXT PRIMARY KEY NOT NULL UNIQUE, lastName TEXT NOT NULL," +
-                "kills INT NOT NULL, deaths INT NOT NULL, ip TEXT NOT NULL); " +
-                // Really hope that this actually works ._.
-                "CREATE TABLE IF NOT EXISTS " + attributeDbName + " (uuid TEXT NOT NULL, attr_name TEXT NOT NULL, " +
-                "attr_type TEXT NOT NULL, attr_value TEXT NOT NULL, FOREIGN KEY(uuid) REFERENCES " + userDbName + "(uuid))");
+                "kills INT NOT NULL, deaths INT NOT NULL, ip TEXT NOT NULL)");
         if(userDb.connect()) {
             if(userDb.initialize()) {
                 getLogger().info("Successfully attached to SQLite DB!");
@@ -70,6 +71,18 @@ public class Users extends SkirtsPlugin {
         } else {
             Bukkit.getPluginManager().disablePlugin(this);
             getLogger().severe("Couldn't connect to SQLite DB!");
+            return;
+        }
+        try {
+            //noinspection SqlDialectInspection
+            final PreparedStatement s = userDb.getConnection().prepareStatement("CREATE TABLE IF NOT EXISTS "
+                    + attributeDbName + " (uuid TEXT NOT NULL, attr_name TEXT NOT NULL, " + "attr_value TEXT NOT NULL, " +
+                    "FOREIGN KEY(uuid) REFERENCES " + userDbName + "(uuid))");
+            userDb.execute(s);
+        } catch(final SQLException e) {
+            e.printStackTrace();
+            getLogger().severe("Couldn't make attr. table, disabling...");
+            getServer().getPluginManager().disablePlugin(this);
             return;
         }
         skirtsUserMap = new SkirtsUserMap(this);
@@ -165,6 +178,7 @@ public class Users extends SkirtsPlugin {
                 } else {
                     final SkirtsUser skirtsUser = new SkirtsUser(UUID.fromString(uuid), lastName, kills, deaths,
                             InetAddress.getByName(ip.replaceAll("/", "")));
+                    // TODO: ATTR
                     final PreparedStatement s2 = userDb.getConnection()
                             .prepareStatement(String.format("SELECT * FROM %s WHERE uuid = ?", attributeDbName));
                     final ResultSet rs2 = s2.executeQuery();
