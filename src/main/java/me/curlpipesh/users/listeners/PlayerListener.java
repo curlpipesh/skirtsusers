@@ -4,19 +4,15 @@ import lombok.NonNull;
 import me.curlpipesh.users.Users;
 import me.curlpipesh.users.attribute.Attribute;
 import me.curlpipesh.users.user.SkirtsUser;
-import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
-import org.bukkit.event.player.PlayerKickEvent;
-import org.bukkit.event.player.PlayerQuitEvent;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -65,7 +61,7 @@ public class PlayerListener implements Listener {
                     final String name = event.getPlayer().getName().equals(lastName) ? lastName : event.getPlayer().getName();
                     final SkirtsUser skirtsUser = new SkirtsUser(UUID.fromString(uuid), name, kills, deaths,
                             event.getPlayer().getAddress().getAddress());
-                    /*final PreparedStatement s2 = users.getUserDb().getConnection()
+                    final PreparedStatement s2 = users.getUserDb().getConnection()
                             .prepareStatement(String.format("SELECT * FROM %s WHERE uuid = ?", users.getAttributeDbName()));
                     final ResultSet rs2 = s2.executeQuery();
                     while(rs2.next()) {
@@ -74,12 +70,14 @@ public class PlayerListener implements Listener {
                         final String attrType = rs2.getString("attr_type");
                         final String attrValue = rs2.getString("attr_value");
                         skirtsUser.addAttribute(attrName, Attribute.fromString(attrType, attrValue));
-                    }*/
+                    }
                     users.getSkirtsUserMap().addUser(skirtsUser);
                 }
             } catch(final SQLException e) {
                 throw new IllegalStateException(e);
             }
+        } else {
+            skirtsUserOptional.get().setLastName(event.getPlayer().getName());
         }
     }
 
@@ -107,7 +105,7 @@ public class PlayerListener implements Listener {
         }
     }
 
-    // Fill in row in DB when someone leaves
+    /*// Fill in row in DB when someone leaves
     @EventHandler
     @SuppressWarnings("unused")
     public void onPlayerQuit(@NonNull final PlayerQuitEvent event) {
@@ -162,5 +160,5 @@ public class PlayerListener implements Listener {
             users.getLogger().warning("Couldn't write stats for user '" + player.getName() + "' (UUID: "
                     + player.getUniqueId() + ") to DB!");
         }
-    }
+    }*/
 }

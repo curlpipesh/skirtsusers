@@ -19,6 +19,7 @@ import java.net.UnknownHostException;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -146,8 +147,44 @@ public class Users extends SkirtsPlugin {
     }
 
     @Override
+    @SuppressWarnings("SqlResolve")
     public void onDisable() {
+        getLogger().info("Writing user data...");
+        for(final SkirtsUser user : skirtsUserMap.getSkirtsUsers()) {
+            // Write to DB
+            try {
+                final PreparedStatement s = userDb.getConnection()
+                        // Such bad practice with INSERT OR REPLACE ;_;
+                        .prepareStatement(String.format("INSERT OR REPLACE INTO %s (uuid, lastName, kills, deaths, ip) " +
+                                "VALUES (?, ?, ?, ?, ?)", userDbName));
+                s.setString(1, user.getUuid().toString());
+                s.setString(2, user.getLastName());
+                s.setInt(3, user.getKills());
+                s.setInt(4, user.getDeaths());
+                s.setString(5, user.getIp().toString());
+                userDb.execute(s);
+                for(final Entry<String, Attribute<?>> e : user.getAttributes().entrySet()) {
+                    final PreparedStatement s2 = userDb.getConnection().prepareStatement("DELETE FROM " +
+                            attributeDbName + " WHERE uuid = ? AND attr_name = ? AND attr_type = ?");
+                    s2.setString(1, user.getUuid().toString());
+                    s2.setString(2, e.getKey());
+                    s2.setString(3, e.getValue().getType());
+                    userDb.execute(s2);
+                    final PreparedStatement s3 = userDb.getConnection()
+                            .prepareStatement("INSERT INTO " + attributeDbName +
+                                    " (uuid, attr_name, attr_type, attr_value) VALUES (?, ?, ?, ?)");
+                    s3.setString(1, user.getUuid().toString());
+                    s3.setString(2, e.getKey());
+                    s3.setString(3, e.getValue().getType());
+                    s3.setString(4, e.getValue().get().toString());
+                    userDb.execute(s3);
+                }
+            } catch(final SQLException e) {
+                e.printStackTrace();
+            }
+        }
         userDb.disconnect();
+        getLogger().info("Done!");
     }
 
     /**
