@@ -76,8 +76,8 @@ public class Users extends SkirtsPlugin {
         try {
             //noinspection SqlDialectInspection
             final PreparedStatement s = userDb.getConnection().prepareStatement("CREATE TABLE IF NOT EXISTS "
-                    + attributeDbName + " (uuid TEXT NOT NULL, attr_name TEXT NOT NULL, " + "attr_value TEXT NOT NULL, " +
-                    "FOREIGN KEY(uuid) REFERENCES " + userDbName + "(uuid))");
+                    + attributeDbName + " (uuid TEXT NOT NULL, attr_name TEXT NOT NULL, attr_type TEXT NOT NULL, " +
+                    "attr_value TEXT NOT NULL, FOREIGN KEY(uuid) REFERENCES " + userDbName + "(uuid))");
             userDb.execute(s);
         } catch(final SQLException e) {
             e.printStackTrace();
@@ -100,7 +100,23 @@ public class Users extends SkirtsPlugin {
                 final int deaths = rs.getInt("deaths");
                 final String ip = rs.getString("ip");
                 if(uuid != null && lastName != null && kills != -1 && deaths != -1 && ip != null) {
-                    skirtsUserMap.addUser(new SkirtsUser(UUID.fromString(uuid), lastName, kills, deaths, InetAddress.getByName(ip.replaceAll("/", ""))));
+                    //skirtsUserMap.addUser(new SkirtsUser(UUID.fromString(uuid), lastName, kills, deaths, InetAddress.getByName(ip.replaceAll("/", ""))));
+                    final SkirtsUser skirtsUser = new SkirtsUser(UUID.fromString(uuid), lastName, kills, deaths,
+                            InetAddress.getByName(ip.replaceAll("/", "")));
+                    final PreparedStatement s2 = userDb.getConnection()
+                            .prepareStatement(String.format("SELECT * FROM %s WHERE uuid = ?", attributeDbName));
+                    s2.setString(1, uuid);
+                    final ResultSet rs2 = s2.executeQuery();
+                    getLogger().info("ResultSet2 worked?: " + rs2.isBeforeFirst());
+                    while(rs2.next()) {
+                        final String uuid2 = rs2.getString("uuid");
+                        final String attrName = rs2.getString("attr_name");
+                        final String attrType = rs2.getString("attr_type");
+                        final String attrValue = rs2.getString("attr_value");
+                        System.out.println(String.format("Loaded: %s %s (%s: %s)", uuid2, attrName, attrType, attrValue));
+                        skirtsUser.addAttribute(attrName, Attribute.fromString(attrType, attrValue));
+                    }
+                    skirtsUserMap.addUser(skirtsUser);
                 }
             }
             rs.close();
@@ -202,5 +218,6 @@ public class Users extends SkirtsPlugin {
 
     private void registerEvents() {
         getServer().getPluginManager().registerEvents(new PlayerListener(this), this);
+        // TODO: Proper logout handling of users. Need to serialize in onDisable, because those logouts aren't registered from /stop
     }
 }

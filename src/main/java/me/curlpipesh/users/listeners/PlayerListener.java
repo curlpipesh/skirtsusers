@@ -1,9 +1,9 @@
 package me.curlpipesh.users.listeners;
 
 import lombok.NonNull;
-import me.curlpipesh.users.user.SkirtsUser;
 import me.curlpipesh.users.Users;
 import me.curlpipesh.users.attribute.Attribute;
+import me.curlpipesh.users.user.SkirtsUser;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -33,12 +33,6 @@ public class PlayerListener implements Listener {
 
     // Deal with user login. If we don't have them already loaded in memory, grab them from the database.
     // If we can't find them in the database, assume that it's a new user and work from there
-
-    /**
-     * Lowest priority so that users are created first
-     *
-     * @param event
-     */
     @EventHandler(priority = EventPriority.HIGHEST)
     @SuppressWarnings("unused")
     public void onPlayerLogin(@NonNull final PlayerJoinEvent event) {
@@ -128,7 +122,7 @@ public class PlayerListener implements Listener {
     }
 
     // Fill in row in DB when someone leaves. Error if something bad happens
-    @SuppressWarnings("TypeMayBeWeakened")
+    @SuppressWarnings({"TypeMayBeWeakened", "SqlResolve"})
     private void handleDisconnect(@NonNull final Player player) {
         final Optional<SkirtsUser> skirtsUserOptional = users.getSkirtsUserMap().getUser(player.getUniqueId());
         if(skirtsUserOptional.isPresent()) {
@@ -145,16 +139,21 @@ public class PlayerListener implements Listener {
                 s.setInt(4, user.getDeaths());
                 s.setString(5, user.getIp().toString());
                 users.getUserDb().execute(s);
-                // TODO: ATTR
                 for(final Entry<String, Attribute<?>> e : user.getAttributes().entrySet()) {
-                    final PreparedStatement s2 = users.getUserDb().getConnection()
-                            // Such bad practice with INSERT OR REPLACE ;_;
-                            .prepareStatement(String.format("INSERT OR REPLACE INTO %s (uuid, attr_name, attr_value) " +
-                                    "VALUES (?, ?, ?)", users.getAttributeDbName()));
+                    final PreparedStatement s2 = users.getUserDb().getConnection().prepareStatement("DELETE FROM " +
+                            users.getAttributeDbName() + " WHERE uuid = ? AND attr_name = ? AND attr_type = ?");
                     s2.setString(1, player.getUniqueId().toString());
                     s2.setString(2, e.getKey());
-                    s2.setString(3, e.getValue().get().toString());
+                    s2.setString(3, e.getValue().getType());
                     users.getUserDb().execute(s2);
+                    final PreparedStatement s3 = users.getUserDb().getConnection()
+                            .prepareStatement("INSERT INTO " + users.getAttributeDbName() +
+                                    " (uuid, attr_name, attr_type, attr_value) VALUES (?, ?, ?, ?)");
+                    s3.setString(1, player.getUniqueId().toString());
+                    s3.setString(2, e.getKey());
+                    s3.setString(3, e.getValue().getType());
+                    s3.setString(4, e.getValue().get().toString());
+                    users.getUserDb().execute(s3);
                 }
             } catch(final SQLException e) {
                 e.printStackTrace();
