@@ -1,9 +1,9 @@
-package me.curlpipesh.users.attribute;
+package lgbt.audrey.users.attribute;
 
-import me.curlpipesh.users.user.SkirtsUser;
+import lgbt.audrey.users.user.AudreyUser;
 
 /**
- * An attribute is a persistent value attached to a {@link SkirtsUser}
+ * An attribute is a persistent value attached to a {@link AudreyUser}
  * instance. An example use-case for this is something like tracking whether
  * an online user is muted.
  *

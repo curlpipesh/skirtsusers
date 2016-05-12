@@ -1,8 +1,8 @@
-package me.curlpipesh.users.command;
+package lgbt.audrey.users.command;
 
-import me.curlpipesh.users.user.SkirtsUser;
-import me.curlpipesh.users.Users;
-import me.curlpipesh.util.utils.MessageUtil;
+import lgbt.audrey.users.Users;
+import lgbt.audrey.users.user.AudreyUser;
+import lgbt.audrey.util.utils.MessageUtil;
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -26,7 +26,7 @@ public class CommandKD implements CommandExecutor {
             if(args.length > 0) {
                 // Allowed to do that?
                 if(commandSender.hasPermission("skirtsusers.kdr.others")) {
-                    final Optional<SkirtsUser> skirtsUserOptional = Users.getInstance().getSkirtsUserMap().getUserByName(args[0]);
+                    final Optional<AudreyUser> skirtsUserOptional = Users.getInstance().getAudreyUserMap().getUserByName(args[0]);
                     // User exists?
                     if(skirtsUserOptional.isPresent()) {
                         final int kills = skirtsUserOptional.get().getKills();
@@ -55,7 +55,7 @@ public class CommandKD implements CommandExecutor {
                 }
             } else {
                 // Self
-                final Optional<SkirtsUser> skirtsUserOptional = Users.getInstance().getSkirtsUserMap().getUser(((Player) commandSender).getUniqueId());
+                final Optional<AudreyUser> skirtsUserOptional = Users.getInstance().getAudreyUserMap().getUser(((Player) commandSender).getUniqueId());
                 // I would honestly be surprised if this didn't work
                 if(skirtsUserOptional.isPresent()) {
                     final int kills = skirtsUserOptional.get().getKills();

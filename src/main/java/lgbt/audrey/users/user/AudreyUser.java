@@ -1,8 +1,8 @@
-package me.curlpipesh.users.user;
+package lgbt.audrey.users.user;
 
+import lgbt.audrey.users.attribute.Attribute;
 import lombok.Data;
 import lombok.NonNull;
-import me.curlpipesh.users.attribute.Attribute;
 
 import java.net.InetAddress;
 import java.util.Map;
@@ -18,7 +18,7 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 @Data
 @SuppressWarnings({"FieldMayBeFinal", "MismatchedQueryAndUpdateOfCollection"})
-public class SkirtsUser {
+public class AudreyUser {
     /**
      * UUID of the user
      */
@@ -51,7 +51,7 @@ public class SkirtsUser {
 
     private final Map<String, Attribute<?>> attributes;
 
-    public SkirtsUser(final UUID uuid, final String lastName, final int kills, final int deaths, final InetAddress ip) {
+    public AudreyUser(final UUID uuid, final String lastName, final int kills, final int deaths, final InetAddress ip) {
         this.uuid = uuid;
         this.lastName = lastName;
         this.kills = kills;

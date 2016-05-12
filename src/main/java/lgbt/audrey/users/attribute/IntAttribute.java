@@ -1,4 +1,4 @@
-package me.curlpipesh.users.attribute;
+package lgbt.audrey.users.attribute;
 
 /**
  * @author audrey

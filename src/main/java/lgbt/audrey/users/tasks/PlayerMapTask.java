@@ -1,7 +1,7 @@
-package me.curlpipesh.users.tasks;
+package lgbt.audrey.users.tasks;
 
-import me.curlpipesh.users.user.SkirtsUser;
-import me.curlpipesh.users.Users;
+import lgbt.audrey.users.user.AudreyUser;
+import lgbt.audrey.users.Users;
 import org.bukkit.entity.Player;
 
 import java.sql.PreparedStatement;
@@ -24,7 +24,7 @@ public class PlayerMapTask implements Runnable {
     @Override
     public void run() {
         for(final Player player : users.getServer().getOnlinePlayers()) {
-            final Optional<SkirtsUser> skirtsUserOptional = users.getSkirtsUserMap().getUser(player.getUniqueId());
+            final Optional<AudreyUser> skirtsUserOptional = users.getAudreyUserMap().getUser(player.getUniqueId());
             if(!skirtsUserOptional.isPresent()) {
                 try {
                     final PreparedStatement s = users.getUserDb().getConnection()
@@ -45,15 +45,15 @@ public class PlayerMapTask implements Runnable {
                     }
                     if(uuid == null || lastName == null || kills == -1 || deaths == -1 || ip == null) {
                         // Assume not seen before
-                        final SkirtsUser skirtsUser = new SkirtsUser(
+                        final AudreyUser skirtsUser = new AudreyUser(
                                 player.getUniqueId(), player.getName(), 0, 0,
                                 player.getAddress().getAddress());
-                        users.getSkirtsUserMap().addUser(skirtsUser);
+                        users.getAudreyUserMap().addUser(skirtsUser);
                     } else {
                         final String name = player.getName().equals(lastName) ? lastName : player.getName();
-                        final SkirtsUser skirtsUser = new SkirtsUser(UUID.fromString(uuid), name, kills, deaths,
+                        final AudreyUser skirtsUser = new AudreyUser(UUID.fromString(uuid), name, kills, deaths,
                                 player.getAddress().getAddress());
-                        users.getSkirtsUserMap().addUser(skirtsUser);
+                        users.getAudreyUserMap().addUser(skirtsUser);
                     }
                 } catch(final SQLException e) {
                     throw new IllegalStateException(e);

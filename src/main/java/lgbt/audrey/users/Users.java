@@ -1,17 +1,17 @@
-package me.curlpipesh.users;
+package lgbt.audrey.users;
 
+import lgbt.audrey.users.command.CommandPlaytime;
+import lgbt.audrey.users.listeners.PlayerListener;
+import lgbt.audrey.users.tasks.PlayerMapTask;
+import lgbt.audrey.users.user.AudreyUserMap;
 import lombok.Getter;
-import me.curlpipesh.users.attribute.Attribute;
-import me.curlpipesh.users.command.CommandKD;
-import me.curlpipesh.users.command.CommandPlaytime;
-import me.curlpipesh.users.listeners.PlayerListener;
-import me.curlpipesh.users.tasks.PlayerMapTask;
-import me.curlpipesh.users.user.SkirtsUser;
-import me.curlpipesh.users.user.SkirtsUserMap;
-import me.curlpipesh.util.command.SkirtsCommand;
-import me.curlpipesh.util.database.IDatabase;
-import me.curlpipesh.util.database.impl.SQLiteDatabase;
-import me.curlpipesh.util.plugin.SkirtsPlugin;
+import lgbt.audrey.users.attribute.Attribute;
+import lgbt.audrey.users.command.CommandKD;
+import lgbt.audrey.users.user.AudreyUser;
+import lgbt.audrey.util.command.AudreyCommand;
+import lgbt.audrey.util.database.IDatabase;
+import lgbt.audrey.util.database.impl.SQLiteDatabase;
+import lgbt.audrey.util.plugin.AudreyPlugin;
 import org.bukkit.Bukkit;
 
 import java.net.InetAddress;
@@ -30,7 +30,7 @@ import java.util.UUID;
  * @since 12/21/15.
  */
 @SuppressWarnings({"Duplicates", "unused"})
-public class Users extends SkirtsPlugin {
+public class Users extends AudreyPlugin {
     @Getter
     private IDatabase userDb;
     @Getter
@@ -43,7 +43,7 @@ public class Users extends SkirtsPlugin {
     private static Users instance;
 
     @Getter
-    private SkirtsUserMap skirtsUserMap;
+    private AudreyUserMap audreyUserMap;
 
     public Users() {
         instance = this;
@@ -86,7 +86,7 @@ public class Users extends SkirtsPlugin {
             getServer().getPluginManager().disablePlugin(this);
             return;
         }
-        skirtsUserMap = new SkirtsUserMap(this);
+        audreyUserMap = new AudreyUserMap(this);
 
         // Grab all users
         try {
@@ -101,8 +101,8 @@ public class Users extends SkirtsPlugin {
                 final int deaths = rs.getInt("deaths");
                 final String ip = rs.getString("ip");
                 if(uuid != null && lastName != null && kills != -1 && deaths != -1 && ip != null) {
-                    //skirtsUserMap.addUser(new SkirtsUser(UUID.fromString(uuid), lastName, kills, deaths, InetAddress.getByName(ip.replaceAll("/", ""))));
-                    final SkirtsUser skirtsUser = new SkirtsUser(UUID.fromString(uuid), lastName, kills, deaths,
+                    //audreyUserMap.addUser(new AudreyUser(UUID.fromString(uuid), lastName, kills, deaths, InetAddress.getByName(ip.replaceAll("/", ""))));
+                    final AudreyUser audreyUser = new AudreyUser(UUID.fromString(uuid), lastName, kills, deaths,
                             InetAddress.getByName(ip.replaceAll("/", "")));
                     final PreparedStatement s2 = userDb.getConnection()
                             .prepareStatement(String.format("SELECT * FROM %s WHERE uuid = ?", attributeDbName));
@@ -115,9 +115,9 @@ public class Users extends SkirtsPlugin {
                         final String attrType = rs2.getString("attr_type");
                         final String attrValue = rs2.getString("attr_value");
                         System.out.println(String.format("Loaded: %s %s (%s: %s)", uuid2, attrName, attrType, attrValue));
-                        skirtsUser.addAttribute(attrName, Attribute.fromString(attrType, attrValue));
+                        audreyUser.addAttribute(attrName, Attribute.fromString(attrType, attrValue));
                     }
-                    skirtsUserMap.addUser(skirtsUser);
+                    audreyUserMap.addUser(audreyUser);
                 }
             }
             rs.close();
@@ -128,15 +128,15 @@ public class Users extends SkirtsPlugin {
 
         registerEvents();
         // Register custom commands
-        getCommandManager().registerCommand(SkirtsCommand.builder().setName("killdeath")
+        getCommandManager().registerCommand(AudreyCommand.builder().setName("killdeath")
                 .setDescription("Shows you your K/D ratio")
                 .addAlias("kd").addAlias("killdeathratio").addAlias("kdr")
-                .setPermissionNode("skirtsusers.kdr")
+                .setPermissionNode("audreyusers.kdr")
                 .setPlugin(this)
                 .setExecutor(new CommandKD()).build());
-        getCommandManager().registerCommand(SkirtsCommand.builder().setName("playtime")
+        getCommandManager().registerCommand(AudreyCommand.builder().setName("playtime")
                 .setDescription("Shows you your playtime")
-                .setPermissionNode("skirtsusers.playtime")
+                .setPermissionNode("audreyusers.playtime")
                 .setUsage("/playtime [user]")
                 .setPlugin(this)
                 .setExecutor(new CommandPlaytime(this))
@@ -150,7 +150,7 @@ public class Users extends SkirtsPlugin {
     @SuppressWarnings("SqlResolve")
     public void onDisable() {
         getLogger().info("Writing user data...");
-        for(final SkirtsUser user : skirtsUserMap.getSkirtsUsers()) {
+        for(final AudreyUser user : audreyUserMap.getAudreyUsers()) {
             // Write to DB
             try {
                 final PreparedStatement s = userDb.getConnection()
@@ -192,10 +192,10 @@ public class Users extends SkirtsPlugin {
      *
      * @param uuid UUID string
      *
-     * @return SkirtsUser with the given uuid
+     * @return AudreyUser with the given uuid
      */
     @SuppressWarnings("unused")
-    public Optional<SkirtsUser> getUserForUUID(final String uuid) {
+    public Optional<AudreyUser> getUserForUUID(final String uuid) {
         return getUserForUUID(UUID.fromString(uuid));
     }
 
@@ -204,11 +204,11 @@ public class Users extends SkirtsPlugin {
      *
      * @param uniqueId UUID
      *
-     * @return SkirtsUser with the given UUID
+     * @return AudreyUser with the given UUID
      */
-    public Optional<SkirtsUser> getUserForUUID(final UUID uniqueId) {
-        final Optional<SkirtsUser> skirtsUserOptional = skirtsUserMap.getUser(uniqueId);
-        if(!skirtsUserOptional.isPresent()) {
+    public Optional<AudreyUser> getUserForUUID(final UUID uniqueId) {
+        final Optional<AudreyUser> audreyUserOptional = audreyUserMap.getUser(uniqueId);
+        if(!audreyUserOptional.isPresent()) {
             try {
                 final PreparedStatement s = userDb.getConnection().prepareStatement(String.format("SELECT * FROM %s WHERE uuid = ?", userDbName));
                 s.setString(1, uniqueId.toString());
@@ -227,9 +227,9 @@ public class Users extends SkirtsPlugin {
                 }
                 if(uuid == null || lastName == null || kills == -1 || deaths == -1 || ip == null) {
                     // Assume not seen before
-                    return Optional.<SkirtsUser>empty();
+                    return Optional.<AudreyUser>empty();
                 } else {
-                    final SkirtsUser skirtsUser = new SkirtsUser(UUID.fromString(uuid), lastName, kills, deaths,
+                    final AudreyUser audreyUser = new AudreyUser(UUID.fromString(uuid), lastName, kills, deaths,
                             InetAddress.getByName(ip.replaceAll("/", "")));
                     // TODO: ATTR
                     final PreparedStatement s2 = userDb.getConnection()
@@ -240,16 +240,16 @@ public class Users extends SkirtsPlugin {
                         final String attrName = rs2.getString("attr_name");
                         final String attrType = rs2.getString("attr_type");
                         final String attrValue = rs2.getString("attr_value");
-                        skirtsUser.addAttribute(attrName, Attribute.fromString(attrType, attrValue));
+                        audreyUser.addAttribute(attrName, Attribute.fromString(attrType, attrValue));
                     }
-                    skirtsUserMap.addUser(skirtsUser);
-                    return Optional.of(skirtsUser);
+                    audreyUserMap.addUser(audreyUser);
+                    return Optional.of(audreyUser);
                 }
             } catch(SQLException | UnknownHostException e) {
                 throw new IllegalStateException(e);
             }
         } else {
-            return skirtsUserOptional;
+            return audreyUserOptional;
         }
     }
 

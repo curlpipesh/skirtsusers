@@ -1,8 +1,8 @@
-package me.curlpipesh.users.command;
+package lgbt.audrey.users.command;
 
-import me.curlpipesh.users.user.SkirtsUser;
-import me.curlpipesh.users.Users;
-import me.curlpipesh.util.utils.MessageUtil;
+import lgbt.audrey.users.user.AudreyUser;
+import lgbt.audrey.users.Users;
+import lgbt.audrey.util.utils.MessageUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Statistic;
@@ -30,7 +30,7 @@ public class CommandPlaytime implements CommandExecutor {
         if(commandSender instanceof Player) {
             if(args.length > 0) {
                 if(commandSender.hasPermission("skirtsusers.playtime.others")) {
-                    final Optional<SkirtsUser> skirtsUserOptional = users.getSkirtsUserMap().getUserByName(args[0]);
+                    final Optional<AudreyUser> skirtsUserOptional = users.getAudreyUserMap().getUserByName(args[0]);
                     if(skirtsUserOptional.isPresent()) {
                         try {
                             final long time = Bukkit.getPlayer(skirtsUserOptional.get().getUuid()).getStatistic(Statistic.PLAY_ONE_TICK) / 20L;

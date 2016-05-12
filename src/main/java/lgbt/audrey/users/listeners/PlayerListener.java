@@ -1,9 +1,9 @@
-package me.curlpipesh.users.listeners;
+package lgbt.audrey.users.listeners;
 
 import lombok.NonNull;
-import me.curlpipesh.users.Users;
-import me.curlpipesh.users.attribute.Attribute;
-import me.curlpipesh.users.user.SkirtsUser;
+import lgbt.audrey.users.Users;
+import lgbt.audrey.users.attribute.Attribute;
+import lgbt.audrey.users.user.AudreyUser;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -32,7 +32,7 @@ public class PlayerListener implements Listener {
     @EventHandler(priority = EventPriority.HIGHEST)
     @SuppressWarnings("unused")
     public void onPlayerLogin(@NonNull final PlayerJoinEvent event) {
-        final Optional<SkirtsUser> skirtsUserOptional = users.getSkirtsUserMap().getUser(event.getPlayer().getUniqueId());
+        final Optional<AudreyUser> skirtsUserOptional = users.getAudreyUserMap().getUser(event.getPlayer().getUniqueId());
         if(!skirtsUserOptional.isPresent()) {
             try {
                 final PreparedStatement s = users.getUserDb().getConnection()
@@ -53,13 +53,13 @@ public class PlayerListener implements Listener {
                 }
                 if(uuid == null || lastName == null || kills == -1 || deaths == -1 || ip == null) {
                     // Assume not seen before
-                    final SkirtsUser skirtsUser = new SkirtsUser(
+                    final AudreyUser skirtsUser = new AudreyUser(
                             event.getPlayer().getUniqueId(), event.getPlayer().getName(), 0, 0,
                             event.getPlayer().getAddress().getAddress());
-                    users.getSkirtsUserMap().addUser(skirtsUser);
+                    users.getAudreyUserMap().addUser(skirtsUser);
                 } else {
                     final String name = event.getPlayer().getName().equals(lastName) ? lastName : event.getPlayer().getName();
-                    final SkirtsUser skirtsUser = new SkirtsUser(UUID.fromString(uuid), name, kills, deaths,
+                    final AudreyUser skirtsUser = new AudreyUser(UUID.fromString(uuid), name, kills, deaths,
                             event.getPlayer().getAddress().getAddress());
                     final PreparedStatement s2 = users.getUserDb().getConnection()
                             .prepareStatement(String.format("SELECT * FROM %s WHERE uuid = ?", users.getAttributeDbName()));
@@ -71,7 +71,7 @@ public class PlayerListener implements Listener {
                         final String attrValue = rs2.getString("attr_value");
                         skirtsUser.addAttribute(attrName, Attribute.fromString(attrType, attrValue));
                     }
-                    users.getSkirtsUserMap().addUser(skirtsUser);
+                    users.getAudreyUserMap().addUser(skirtsUser);
                 }
             } catch(final SQLException e) {
                 throw new IllegalStateException(e);
@@ -86,18 +86,18 @@ public class PlayerListener implements Listener {
     @SuppressWarnings("unused")
     public void onPlayerDeath(@NonNull final PlayerDeathEvent event) {
         final UUID killed = event.getEntity().getUniqueId();
-        final Optional<SkirtsUser> killedSkirtsUser = users.getSkirtsUserMap().getUser(killed);
-        if(killedSkirtsUser.isPresent()) {
-            killedSkirtsUser.get().setDeaths(killedSkirtsUser.get().getDeaths() + 1);
+        final Optional<AudreyUser> killedAudreyUser = users.getAudreyUserMap().getUser(killed);
+        if(killedAudreyUser.isPresent()) {
+            killedAudreyUser.get().setDeaths(killedAudreyUser.get().getDeaths() + 1);
         } else {
             users.getLogger().warning("Couldn't update deaths for user '" + event.getEntity().getName()
                     + "' (UUID: " + killed + ')');
         }
         if(event.getEntity().getKiller() != null) {
             final UUID killer = event.getEntity().getKiller().getUniqueId();
-            final Optional<SkirtsUser> killerSkirtsUser = users.getSkirtsUserMap().getUser(killer);
-            if(killerSkirtsUser.isPresent()) {
-                killerSkirtsUser.get().setKills(killerSkirtsUser.get().getKills() + 1);
+            final Optional<AudreyUser> killerAudreyUser = users.getAudreyUserMap().getUser(killer);
+            if(killerAudreyUser.isPresent()) {
+                killerAudreyUser.get().setKills(killerAudreyUser.get().getKills() + 1);
             } else {
                 users.getLogger().warning("Couldn't update kills for user '" + event.getEntity().getKiller().getName()
                         + "' (UUID: " + killer + ')');
@@ -122,9 +122,9 @@ public class PlayerListener implements Listener {
     // Fill in row in DB when someone leaves. Error if something bad happens
     @SuppressWarnings({"TypeMayBeWeakened", "SqlResolve"})
     private void handleDisconnect(@NonNull final Player player) {
-        final Optional<SkirtsUser> skirtsUserOptional = users.getSkirtsUserMap().getUser(player.getUniqueId());
+        final Optional<AudreyUser> skirtsUserOptional = users.getAudreyUserMap().getUser(player.getUniqueId());
         if(skirtsUserOptional.isPresent()) {
-            final SkirtsUser user = skirtsUserOptional.get();
+            final AudreyUser user = skirtsUserOptional.get();
             // Write to DB
             try {
                 final PreparedStatement s = users.getUserDb().getConnection()
