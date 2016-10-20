@@ -1,10 +1,10 @@
-name: SkirtsUsers
+name: AudreyUsers
 main: lgbt.audrey.users.Users
 version: 0.2.0
 description: skirts' plugin for basic user management like UUID->name
 authors: [skirts]
 website: https://audrey.lgbt/
-depend: [SkirtsUtil]
+depend: [AudreyUtil]
 loadbefore: [Essentials]
 
 permissions:

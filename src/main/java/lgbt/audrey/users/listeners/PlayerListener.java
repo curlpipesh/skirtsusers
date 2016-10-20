@@ -29,7 +29,7 @@ public class PlayerListener implements Listener {
 
     // Deal with user login. If we don't have them already loaded in memory, grab them from the database.
     // If we can't find them in the database, assume that it's a new user and work from there
-    @EventHandler(priority = EventPriority.HIGHEST)
+    @EventHandler(priority = EventPriority.LOWEST)
     @SuppressWarnings("unused")
     public void onPlayerLogin(@NonNull final PlayerJoinEvent event) {
         final Optional<AudreyUser> skirtsUserOptional = users.getAudreyUserMap().getUser(event.getPlayer().getUniqueId());
