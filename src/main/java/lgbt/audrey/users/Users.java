@@ -93,7 +93,7 @@ public class Users extends AudreyPlugin {
             final PreparedStatement s = userDb.getConnection().prepareStatement(String.format("SELECT * FROM %s", userDbName));
             s.execute();
             final ResultSet rs = s.getResultSet();
-            getLogger().info("ResultSet worked?: " + rs.isBeforeFirst());
+            //getLogger().info("ResultSet worked?: " + rs.isBeforeFirst());
             while(rs.next()) {
                 final String uuid = rs.getString("uuid");
                 final String lastName = rs.getString("lastName");
@@ -108,13 +108,13 @@ public class Users extends AudreyPlugin {
                             .prepareStatement(String.format("SELECT * FROM %s WHERE uuid = ?", attributeDbName));
                     s2.setString(1, uuid);
                     final ResultSet rs2 = s2.executeQuery();
-                    getLogger().info("ResultSet2 worked?: " + rs2.isBeforeFirst());
+                    //getLogger().info("ResultSet2 worked?: " + rs2.isBeforeFirst());
                     while(rs2.next()) {
                         final String uuid2 = rs2.getString("uuid");
                         final String attrName = rs2.getString("attr_name");
                         final String attrType = rs2.getString("attr_type");
                         final String attrValue = rs2.getString("attr_value");
-                        System.out.println(String.format("Loaded: %s %s (%s: %s)", uuid2, attrName, attrType, attrValue));
+                        //System.out.println(String.format("Loaded: %s %s (%s: %s)", uuid2, attrName, attrType, attrValue));
                         audreyUser.addAttribute(attrName, Attribute.fromString(attrType, attrValue));
                     }
                     audreyUserMap.addUser(audreyUser);
